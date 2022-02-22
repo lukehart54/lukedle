@@ -1,15 +1,21 @@
-import { useState } from 'react'
-import logo from './logo.svg'
-import './App.css'
+import './App.css';
+import WordRow from './WordRow';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
 
   return (
     <div className="mx-auto w-96">
-      <h1 className="text-6xl text-center">Lukedle</h1>
-    </div>
-  )
-}
+      <header className="border-b border-gray-500 pb-3">
+        <h1 className="text-6xl text-center">Lukedle</h1>
+      </header>
 
-export default App
+      <main>
+        <WordRow letters="Hello" />
+        <WordRow letters="Hello" />
+        <WordRow letters="Hello" />
+        <WordRow letters="Hello" />
+        <WordRow letters="Hello" />
+      </main>
+    </div>
+  );
+}
