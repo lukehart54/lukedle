@@ -1,30 +1,76 @@
 import wordBank from './word-bank.json';
 
-export function getRandomWord() {
-    const randomIndex = Math.floor(Math.random() * wordBank.length);
-    return wordBank[randomIndex];
-}
+export const LETTER_LENGTH = 5;
+
 
 export enum LetterState {
-    Wrong,
-    Present,
-    Match
+  Miss, // Letter doesn't exist at all
+  Present, // Letter exists but wrong location
+  Match, // Letter exists and is in the right location
 }
 
-export function computeGuess(guess: string, wordString: string) {
-    const guessArray = guess.split('');
-    const answerArray = wordString.split('');
+export function computeGuess(
+  guess: string,
+  answerString: string = word
+): LetterState[] {
+  const result: LetterState[] = [];
 
-    const result: LetterState[] = [];
-    guessArray.forEach((letter, index) => {
-        if (letter === answerArray[index]) {
-            result.push(LetterState.Match);
-        } else if (answerArray.includes(letter)) {
-            result.push(LetterState.Present);
-        } else {
-            result.push(LetterState.Wrong);
-        }
-    })
-
+  if (guess.length !== answerString.length) {
     return result;
+  }
+  const answer = answerString.split('');
+
+  const guessAsArray = guess.split('');
+
+  const answerLetterCount: Record<string, number> = {};
+
+  guessAsArray.forEach((letter, index) => {
+    const currentAnswerLetter = answer[index];
+
+    answerLetterCount[currentAnswerLetter] = answerLetterCount[
+      currentAnswerLetter
+    ]
+      ? answerLetterCount[currentAnswerLetter] + 1
+      : 1;
+
+    if (currentAnswerLetter === letter) {
+      result.push(LetterState.Match);
+    } else if (answer.includes(letter)) {
+      result.push(LetterState.Present);
+    } else {
+      result.push(LetterState.Miss);
+    }
+  });
+
+  result.forEach((curResult, resultIndex) => {
+    if (curResult !== LetterState.Present) {
+      return;
+    }
+    const guessLetter = guessAsArray[resultIndex];
+
+    answer.forEach((currentAnswerLetter, answerIndex) => {
+      if (currentAnswerLetter !== guessLetter) {
+        return;
+      }
+
+      if (result[answerIndex] === LetterState.Match) {
+        result[resultIndex] = LetterState.Miss;
+      }
+
+      if (answerLetterCount[guessLetter] <= 0) {
+        result[resultIndex] = LetterState.Miss;
+      }
+    });
+
+    answerLetterCount[guessLetter]--;
+  });
+
+  return result;
 }
+
+export function getRandomWord(): string {
+  return wordBank[Math.floor(Math.random() * wordBank.length)];
+}
+
+export const word = getRandomWord();
+console.log(word);
