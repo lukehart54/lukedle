@@ -1,21 +1,25 @@
-import { computeGuess, LetterState, LETTER_LENGTH } from './word-utils';
-
+import { LetterState, LETTER_LENGTH } from './word-utils';
 
 interface WordRowProps {
   letters: string;
+  result?: LetterState[];
 }
 
-export default function WordRow({ letters: lettersProp }: WordRowProps) {
+export default function WordRow({
+  letters: lettersProp = '',
+  result = [],
+}: WordRowProps) {
   const lettersRemaining = LETTER_LENGTH - lettersProp.length;
   const letters = lettersProp
     .split('')
     .concat(Array(lettersRemaining).fill(''));
-  const guessStates = computeGuess(lettersProp);
-  
+
+    
+
   return (
     <div className="grid grid-cols-5 gap-2 p-2">
       {letters.map((char, index) => (
-        <CharacterBox key={index} value={char} state={guessStates[index]} />
+        <CharacterBox key={index} value={char} state={result[index]} />
       ))}
     </div>
   );
@@ -30,7 +34,7 @@ function CharacterBox({ value, state }: CharacterBoxProps) {
   return (
     <div
       className={`inline-block border-2 border-gray-500 p-4 
-      uppercase font-bold text-center ${stateStyles}`}
+      uppercase font-bold text-center before:inline-block before:content:['_'] ${stateStyles}`}
     >
       {value}
     </div>
@@ -42,4 +46,3 @@ const characterStateStyles = {
   [LetterState.Present]: 'bg-yellow-500',
   [LetterState.Match]: 'bg-green-500',
 };
-
