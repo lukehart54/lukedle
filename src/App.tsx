@@ -1,10 +1,9 @@
 import './App.css';
 import WordRow from './WordRow';
 import React, { useState } from 'react';
-import { useStore } from './store';
+import { GUESS_LENGTH, useStore } from './store';
 import { LETTER_LENGTH } from './word-utils';
 
-const GUESS_LENGTH = 6;
 export default function App() {
   const state = useStore();
   const [guess, setGuess] = useState('');
@@ -30,7 +29,7 @@ export default function App() {
 
   rows = rows.concat(Array(numGuessesRemaining).fill(''));
 
-  const gameIsOver = state.rows.length === GUESS_LENGTH;
+  const gameIsOver = state.gameState !== 'playing';
 
   return (
     <div className="mx-auto w-96">
