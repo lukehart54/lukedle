@@ -1,106 +1,121 @@
-import './App.css';
+import { useEffect, useRef, useState } from 'react';
+import Keyboard from './Keyboard';
+import { useStore, NUMBER_OF_GUESSES, WORD_LENGTH } from './store';
+import { isValidWord } from './word-utils';
 import WordRow from './WordRow';
-import React, { useEffect, useRef, useState } from 'react';
-import { GUESS_LENGTH, useStore } from './store';
-import { LETTER_LENGTH } from './word-utils';
 
 export default function App() {
   const state = useStore();
   const [guess, setGuess] = useGuess();
+  const [showInvalidGuess, setInvalidGuess] = useState(false);
+  const addGuess = useStore((s) => s.addGuess);
+  const previousGuess = usePrevious(guess);
+  useEffect(() => {
+    let id: any;
+    if (showInvalidGuess) {
+      id = setTimeout(() => setInvalidGuess(false), 500)
+    }
+    return () => clearTimeout(id)
+  }, [showInvalidGuess]);
+  useEffect(() => {
+    if (guess.length === 0 && previousGuess?.length === WORD_LENGTH) {
+      if (isValidWord(previousGuess)) {
+        addGuess(previousGuess);
+        setInvalidGuess(false);
+      } else {
+        setInvalidGuess(true);
+        setGuess(previousGuess);
+      }
+    }
+  }, [guess]);
 
+  const isGameOver = state.gameState !== 'playing';
 
   let rows = [...state.rows];
-  console.log(rows);
-  if (rows.length < GUESS_LENGTH) {
-    rows.push({guess});
+
+  let currRow = 0;
+  if (rows.length < NUMBER_OF_GUESSES) {
+    currRow = rows.push({ guess }) - 1;
   }
 
-  const numGuessesRemaining = GUESS_LENGTH - rows.length;
+  const guessesRemaining = NUMBER_OF_GUESSES - rows.length;
 
-  rows = rows.concat(Array(numGuessesRemaining).fill(''));
-
-  const gameIsOver = state.gameState !== 'playing';
+  rows = rows.concat(Array(guessesRemaining).fill(''));
 
   return (
-    <div className="mx-auto w-96">
-      <header className="border-b border-gray-500 pb-2 my-2">
-        <h1 className="text-6xl text-center p-3">Lukedle</h1>
+    <div className="dark:bg-black">
+      <div className="mx-auto w-96 dark:bg-black relative h-screen">
+        <header className="border-b border-gray-400 py-4 mb-4">
+          <h1 className="text-3xl mb-2 dark:text-white text-center uppercase">
+            Lukedle
+          </h1>
+        </header>
 
-        {/* <div>
-          <input
-            type="text"
-            className="w-full p-2 border-2 border-blue-500"
-            value={guess}
-            onChange={onChange}
-            disabled={gameIsOver}
-          />
-        </div> */}
-      </header>
+        <main className="grid grid-rows-6">
+          {rows.map((word, index) => (
+            <WordRow
+              key={index}
+              letters={word.guess}
+              result={word.result}
+              className={showInvalidGuess && currRow === index ? 'animate-bounce' : ''}
+            />
+          ))}
+        </main>
+        <Keyboard/>
 
-      <main className="grid grid-rows-6 gap-2">
-        {rows.map(({guess, result}, index) => (
-          <WordRow key={index} letters={guess} result={result} />
-        ))}
-      </main>
-
-      {gameIsOver && (
-        <div
-          role="modal"
-          className="absolute bg-white 
-        left-0 right-0 top-1/4 p-6 w-1/4 mx-auto text-center rounded border border-gray-500"
-        >
-          Game Over! Word was {state.answer.toUpperCase()}
-          <button
-            className="border mt-2 w-1/8 border-black bg-black rounded text-white text p-1"
-            onClick={() => {
-              state.newGame();
-              setGuess('');
-            }}
+        {isGameOver && (
+          <div
+            role="modal"
+            className="absolute bg-white border border-gray-500 rounded text-center w-3/4 h-1/8 p-6 left-0 right-0 mx-auto top-1/4"
           >
-            New Game
-          </button>
-        </div>
-      )}
+            <p>Game Over</p>
+            <p className="uppercase">{state.answer}</p>
+
+            <button
+              className="border border-green-500 rounded bg-green-500 p-2 mt-4 text-gray-800 shadow"
+              onClick={() => {
+                state.newGame();
+                setGuess('');
+              }}
+            >
+              New Game
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 function useGuess() {
-  const addGuess = useStore(s => s.addGuess);
-  const [guess, setGuess] = useState('');
-  const prevGuess = usePrevious(guess);
+  const guessState = useState('');
+  const [guess, setGuess] = guessState;
 
   const onKeyDown = (e: KeyboardEvent) => {
-    let letter = e.key;
-    console.log(letter);
     setGuess((curGuess) => {
-      const newGuess = letter.length === 1 ? curGuess + letter : curGuess;
+      let letter = e.key;
 
-      switch(letter) {
+      const newGuess =
+        letter.length === 1 && curGuess.length !== WORD_LENGTH
+          ? curGuess + letter
+          : curGuess;
+
+      switch (e.key) {
         case 'Backspace':
           return newGuess.slice(0, -1);
         case 'Enter':
-          if (newGuess.length === LETTER_LENGTH) {
-            addGuess(newGuess);
+          if (newGuess.length === WORD_LENGTH) {
             return '';
-          } else {
-
           }
       }
 
-      // if(curGuess.length === LETTER_LENGTH) {
-      //   return curGuess;
-      // }
-      useEffect(() => {
-        if (guess.length === 0 && prevGuess?.length === LETTER_LENGTH) {
-          addGuess(prevGuess);
-        }
-      }, [guess]);
+      if (newGuess.length === WORD_LENGTH) {
+        return newGuess;
+      }
 
       return newGuess;
     });
   };
-  
 
   useEffect(() => {
     document.addEventListener('keydown', onKeyDown);
@@ -108,7 +123,8 @@ function useGuess() {
       document.removeEventListener('keydown', onKeyDown);
     };
   }, []);
-  return [guess, setGuess];
+
+  return guessState;
 }
 
 // source https://usehooks.com/usePrevious/

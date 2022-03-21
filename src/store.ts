@@ -1,7 +1,8 @@
 import create from 'zustand';
 import { persist } from 'zustand/middleware';
 import { computeGuess, getRandomWord, LetterState } from './word-utils';
-export const GUESS_LENGTH = 6;
+export const NUMBER_OF_GUESSES = 6;
+export const WORD_LENGTH = 5;
 
 interface GuessRow {
   guess: string;
@@ -38,10 +39,10 @@ export const useStore = create<StoreState>(
         set(() => ({
           rows,
           gameState: didWin
-          ? 'won' 
-          : rows.length === GUESS_LENGTH
-          ? 'lost' 
-          : 'playing',
+            ? 'won'
+            : rows.length === NUMBER_OF_GUESSES
+            ? 'lost'
+            : 'playing',
         }));
       },
       newGame: () => {
@@ -58,4 +59,4 @@ export const useStore = create<StoreState>(
   )
 );
 
-useStore.persist.clearStorage();
+// useStore.persist.clearStorage();
