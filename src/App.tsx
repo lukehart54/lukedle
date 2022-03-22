@@ -6,7 +6,7 @@ import WordRow from './WordRow';
 
 export default function App() {
   const state = useStore();
-  const [guess, setGuess] = useGuess();
+  const [guess, setGuess, addGuessLetter] = useGuess();
   const [showInvalidGuess, setInvalidGuess] = useState(false);
   const addGuess = useStore((s) => s.addGuess);
   const previousGuess = usePrevious(guess);
@@ -43,7 +43,7 @@ export default function App() {
   rows = rows.concat(Array(guessesRemaining).fill(''));
 
   return (
-    <div className="dark:bg-black">
+    <div className="dark:bg-black h-full">
       <div className="mx-auto w-96 dark:bg-black relative h-screen">
         <header className="border-b border-gray-400 py-4 mb-4">
           <h1 className="text-3xl mb-2 dark:text-white text-center uppercase">
@@ -61,7 +61,9 @@ export default function App() {
             />
           ))}
         </main>
-        <Keyboard/>
+        <Keyboard onClick={(letter) => {
+          addGuessLetter(letter);
+        }}/>
 
         {isGameOver && (
           <div
@@ -87,9 +89,38 @@ export default function App() {
   );
 }
 
-function useGuess() {
+function useGuess(): [
+  string,
+  React.Dispatch<React.SetStateAction<string>>,
+  (letter: string) => void
+] {
   const guessState = useState('');
   const [guess, setGuess] = guessState;
+
+  const addGuessLetter = (letter: string) => {
+        setGuess((curGuess) => {
+
+          const newGuess =
+            letter.length === 1 && curGuess.length !== WORD_LENGTH
+              ? curGuess + letter
+              : curGuess;
+
+          switch (letter) {
+            case 'Backspace':
+              return newGuess.slice(0, -1);
+            case 'Enter':
+              if (newGuess.length === WORD_LENGTH) {
+                return '';
+              }
+          }
+
+          if (newGuess.length === WORD_LENGTH) {
+            return newGuess;
+          }
+
+          return newGuess;
+        });
+  } ;
 
   const onKeyDown = (e: KeyboardEvent) => {
     setGuess((curGuess) => {
@@ -100,7 +131,7 @@ function useGuess() {
           ? curGuess + letter
           : curGuess;
 
-      switch (e.key) {
+      switch (letter) {
         case 'Backspace':
           return newGuess.slice(0, -1);
         case 'Enter':
@@ -124,7 +155,7 @@ function useGuess() {
     };
   }, []);
 
-  return guessState;
+  return [guess, setGuess, addGuessLetter];
 }
 
 // source https://usehooks.com/usePrevious/
