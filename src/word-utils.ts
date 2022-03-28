@@ -1,6 +1,6 @@
 import wordBank from './word-bank.json';
 
-export const LETTER_LENGTH = 5;
+export const LETTER_LENGTH = 6;
 
 
 export enum LetterState {
@@ -77,4 +77,3 @@ export function getRandomWord(): string {
 }
 
 export const word = getRandomWord();
-console.log(word);

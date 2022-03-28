@@ -9,7 +9,6 @@ export default function Keyboard({
   const keyboardLetterState = useStore((s) => s.keyboardLetterState);
   const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const letter = e.currentTarget.textContent;
-    console.log(letter);
     onClickProp(letter!);
   };
   return (

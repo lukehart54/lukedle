@@ -2,7 +2,7 @@ import create from 'zustand';
 import { persist } from 'zustand/middleware';
 import { computeGuess, getRandomWord, LetterState } from './word-utils';
 export const NUMBER_OF_GUESSES = 6;
-export const WORD_LENGTH = 5;
+export const WORD_LENGTH = 6;
 
 interface GuessRow {
   guess: string;
