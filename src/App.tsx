@@ -10,6 +10,7 @@ export default function App() {
   const [showInvalidGuess, setInvalidGuess] = useState(false);
   const addGuess = useStore((s) => s.addGuess);
   const previousGuess = usePrevious(guess);
+  
   useEffect(() => {
     let id: any;
     if (showInvalidGuess) {

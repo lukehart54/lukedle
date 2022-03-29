@@ -16,7 +16,7 @@ export default function Keyboard({
       {keyboardKeys.map((keyboardRow, rowIndex) => (
         <div key={rowIndex} className="my-2 flex justify-center space-x-1">
           {keyboardRow.map((key, index) => {
-            let styles = 'rounded font-bold uppercase flex-1 py-2';
+            let styles = 'rounded font-bold uppercase flex-1 py-4 px-2';
 
             const letterState = keyStateStyles[keyboardLetterState[key]];
 
