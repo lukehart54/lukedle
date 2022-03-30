@@ -15,12 +15,14 @@ interface StoreState {
   gameState: 'playing' | 'won' | 'lost';
   addGuess: (guess: string) => void;
   newGame: () => void;
-  keyboardLetterState: { [letter: string]: LetterState}
+  keyboardLetterState: { [letter: string]: LetterState};
+  score: number;
 }
 
 export const useStore = create<StoreState>(
   persist(
     (set, get) => ({
+      score: 0,
       answer: getRandomWord(),
       rows: [],
       keyboardLetterState: {},
@@ -29,7 +31,6 @@ export const useStore = create<StoreState>(
         const result = computeGuess(guess, get().answer);
 
         const didWin = result.every((i) => i === LetterState.Match);
-
         const rows = [
           ...get().rows,
           {
@@ -59,6 +60,7 @@ export const useStore = create<StoreState>(
         set(() => ({
           rows,
           keyboardLetterState,
+          score: didWin ? get().score + 1 : get().score,
           gameState: didWin
             ? 'won'
             : rows.length === NUMBER_OF_GUESSES

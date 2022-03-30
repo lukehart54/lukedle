@@ -1,4 +1,5 @@
 import wordBank from './word-bank.json';
+import commonWords from './common-words.json';
 
 export const LETTER_LENGTH = 6;
 
@@ -73,7 +74,7 @@ export function isValidWord(word: string): boolean {
 }
 
 export function getRandomWord(): string {
-  return wordBank[Math.floor(Math.random() * wordBank.length)];
+  return commonWords[Math.floor(Math.random() * commonWords.length)];
 }
 
 export const word = getRandomWord();

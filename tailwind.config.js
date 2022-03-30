@@ -6,6 +6,9 @@ module.exports = {
         'dark-green': '#32a86f',
         'mygrey': '#808080',
       },
+      animation: {
+        'transform': 'rotateY(360deg)',
+      },
     },
   },
   plugins: [],

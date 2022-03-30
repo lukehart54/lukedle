@@ -31,6 +31,8 @@ export default function App() {
   }, [guess]);
 
   const isGameOver = state.gameState !== 'playing';
+  // stats button clicked boolean
+  const [statsClicked, setStatsClicked] = useState(false);
 
   let rows = [...state.rows];
 
@@ -44,12 +46,15 @@ export default function App() {
   rows = rows.concat(Array(guessesRemaining).fill(''));
 
   return (
-    <div className="dark:bg-black h-full">
+    <div className="dark:bg-black">
       <div className="mx-auto w-96 dark:bg-black relative h-screen">
-        <header className="border-b border-gray-400 py-4 mb-4">
+        <header className="grid grid-row-2 place-items-center border-b border-gray-400 py-4 mb-4">
           <h1 className="text-3xl mb-2 dark:text-white text-center uppercase">
             Lukedle
           </h1>
+          <button onClick={() => setStatsClicked(!statsClicked)}>
+            <img className="w-10 " src="src/images/stat.png" alt="Stat Icon" />
+          </button>
         </header>
 
         <main className="grid grid-rows-6">
@@ -58,13 +63,29 @@ export default function App() {
               key={index}
               letters={word.guess}
               result={word.result}
-              className={showInvalidGuess && currRow === index ? 'animate-bounce' : ''}
+              className={
+                showInvalidGuess && currRow === index ? 'animate-bounce' : ''
+              }
             />
           ))}
         </main>
-        <Keyboard onClick={(letter) => {
-          addGuessLetter(letter);
-        }}/>
+        <Keyboard
+          onClick={(letter) => {
+            addGuessLetter(letter);
+          }}
+        />
+
+        {statsClicked && (
+          <div
+            role="modal"
+            className="absolute bg-white border border-gray-500 rounded text-center w-3/4 h-1/8 p-6 left-0 right-0 mx-auto top-1/4"
+          >
+            <div className='grid grid-rows-2'>
+              <h2>Stats</h2>
+              <h2>Games Won: {state.score}</h2>
+            </div>
+          </div>
+        )}
 
         {isGameOver && (
           <div
@@ -159,7 +180,7 @@ function useGuess(): [
   return [guess, setGuess, addGuessLetter];
 }
 
-// source https://usehooks.com/usePrevious/
+// stolen from https://usehooks.com/usePrevious/
 function usePrevious<T>(value: T): T {
   const ref: any = useRef<T>();
 
