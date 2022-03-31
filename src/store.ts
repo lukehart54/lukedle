@@ -17,11 +17,15 @@ interface StoreState {
   newGame: () => void;
   keyboardLetterState: { [letter: string]: LetterState};
   score: number;
+  gamesPlayed: number;
+  currentStreak: number;
 }
 
 export const useStore = create<StoreState>(
   persist(
     (set, get) => ({
+      currentStreak: 0,
+      gamesPlayed: 0,
       score: 0,
       answer: getRandomWord(),
       rows: [],
@@ -60,6 +64,7 @@ export const useStore = create<StoreState>(
         set(() => ({
           rows,
           keyboardLetterState,
+          currentStreak: didWin ? get().currentStreak + 1 : 0,
           score: didWin ? get().score + 1 : get().score,
           gameState: didWin
             ? 'won'
@@ -70,6 +75,7 @@ export const useStore = create<StoreState>(
       },
       newGame: () => {
         set({
+          gamesPlayed: get().gamesPlayed + 1,
           answer: getRandomWord(),
           rows: [],
           gameState: 'playing',

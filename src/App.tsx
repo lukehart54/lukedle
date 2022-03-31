@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import Keyboard from './Keyboard';
+import Keyboard, { keyboardKeys } from './Keyboard';
 import { useStore, NUMBER_OF_GUESSES, WORD_LENGTH } from './store';
 import { isValidWord } from './word-utils';
 import WordRow from './WordRow';
@@ -10,13 +10,21 @@ export default function App() {
   const [showInvalidGuess, setInvalidGuess] = useState(false);
   const addGuess = useStore((s) => s.addGuess);
   const previousGuess = usePrevious(guess);
-  
+
+  let darkMode = false;
+  window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? (darkMode = true)
+    : (darkMode = false);
+    
+
+
+
   useEffect(() => {
     let id: any;
     if (showInvalidGuess) {
-      id = setTimeout(() => setInvalidGuess(false), 500)
+      id = setTimeout(() => setInvalidGuess(false), 500);
     }
-    return () => clearTimeout(id)
+    return () => clearTimeout(id);
   }, [showInvalidGuess]);
   useEffect(() => {
     if (guess.length === 0 && previousGuess?.length === WORD_LENGTH) {
@@ -41,6 +49,10 @@ export default function App() {
     currRow = rows.push({ guess }) - 1;
   }
 
+  const handleStatsClick = () => {
+    setStatsClicked(!statsClicked);
+  };
+
   const guessesRemaining = NUMBER_OF_GUESSES - rows.length;
 
   rows = rows.concat(Array(guessesRemaining).fill(''));
@@ -52,8 +64,8 @@ export default function App() {
           <h1 className="text-3xl mb-2 dark:text-white text-center uppercase">
             Lukedle
           </h1>
-          <button onClick={() => setStatsClicked(!statsClicked)}>
-            <img className="w-10 " src="src/images/stat.png" alt="Stat Icon" />
+          <button onClick={handleStatsClick}>
+            {darkMode ? <img className="w-10 " src="src/images/stat-dark.png" alt="Stat Icon" /> : <img className="w-10 " src="src/images/stat.png" alt="Stat Icon" />}
           </button>
         </header>
 
@@ -80,9 +92,28 @@ export default function App() {
             role="modal"
             className="absolute bg-white border border-gray-500 rounded text-center w-3/4 h-1/8 p-6 left-0 right-0 mx-auto top-1/4"
           >
-            <div className='grid grid-rows-2'>
-              <h2>Stats</h2>
-              <h2>Games Won: {state.score}</h2>
+            <div className="">
+              <h2>Statistics</h2>
+              <div className="grid grid-cols-2">
+                <div className="flex flex-col">
+                  <div>{state.gamesPlayed}</div>
+                  <div>Games Played</div>
+                </div>
+                <div className="flex flex-col">
+                  <div>{state.score}</div>
+                  <div>Games Won</div>
+                </div>
+                <div className="flex flex-col">
+                  <div>
+                    {Math.floor((state.score / state.gamesPlayed) * 100)}%
+                  </div>
+                  <div>Win Percentage</div>
+                </div>
+                <div className="flex flex-col">
+                  <div>{state.currentStreak}</div>
+                  <div>Current Streak</div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -120,36 +151,37 @@ function useGuess(): [
   const [guess, setGuess] = guessState;
 
   const addGuessLetter = (letter: string) => {
-        setGuess((curGuess) => {
+    setGuess((curGuess) => {
+      const newGuess =
+        letter.length === 1 && curGuess.length !== WORD_LENGTH
+          ? curGuess + letter
+          : curGuess;
 
-          const newGuess =
-            letter.length === 1 && curGuess.length !== WORD_LENGTH
-              ? curGuess + letter
-              : curGuess;
-
-          switch (letter) {
-            case 'Backspace':
-              return newGuess.slice(0, -1);
-            case 'Enter':
-              if (newGuess.length === WORD_LENGTH) {
-                return '';
-              }
-          }
-
+      switch (letter) {
+        case 'Backspace':
+          return newGuess.slice(0, -1);
+        case 'Enter':
           if (newGuess.length === WORD_LENGTH) {
-            return newGuess;
+            return '';
           }
+      }
 
-          return newGuess;
-        });
-  } ;
+      if (newGuess.length === WORD_LENGTH) {
+        return newGuess;
+      }
+
+      return newGuess;
+    });
+  };
 
   const onKeyDown = (e: KeyboardEvent) => {
     setGuess((curGuess) => {
       let letter = e.key;
 
       const newGuess =
-        letter.length === 1 && curGuess.length !== WORD_LENGTH
+        letter.length === 1 &&
+        exists(keyboardKeys, letter) &&
+        curGuess.length !== WORD_LENGTH
           ? curGuess + letter
           : curGuess;
 
@@ -189,4 +221,8 @@ function usePrevious<T>(value: T): T {
   }, [value]);
 
   return ref.current;
+}
+
+function exists(arr: String[][], search: String): boolean {
+  return arr.some((row) => row.includes(search));
 }
